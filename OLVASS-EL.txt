@@ -1,0 +1,12 @@
+ANIME ADVENTURES HU BOT
+
+1. Developer Portalon: Bot fül > kapcsold be: Server Members Intent, Message Content Intent
+2. Termuxban, ebben a mappában:
+   npm install
+   cp .env.pelda .env
+   nano .env        (írd be a tokent, mentés: Ctrl+O, Enter, kilépés: Ctrl+X)
+   node index.js
+3. Discordon: /telepites, majd a bejelentések csatornában /rangvalaszto, a ticket csatornában /ticketpanel
+
+A rangokat, csatornákat és beállításokat a config.js fájlban tudod átírni.
+A tokent soha ne küldd el senkinek.
