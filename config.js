@@ -97,4 +97,37 @@ const summon = [
   { ritkasag: 'Common', esely: 35, szin: '#C4C9D1', egysegek: ['Fáradt Diák', 'Pogácsa Őr', 'Random Falusi'] },
 ];
 
-module.exports = { K, rangok, kategoriak, beallitasok, summon };
+// A /napi parancs ezekből sorsol naponta 3 különböző típusú küldetést.
+const kuldetesSablonok = [
+  { tipus: 'uzenet', cel: 10, szoveg: 'Küldj 10 üzenetet', xp: 40 },
+  { tipus: 'uzenet', cel: 25, szoveg: 'Küldj 25 üzenetet', xp: 80 },
+  { tipus: 'summon', cel: 1, szoveg: 'Használd a /summon parancsot', xp: 30 },
+  { tipus: 'summon', cel: 3, szoveg: 'Használd 3-szor a /summon parancsot', xp: 70 },
+  { tipus: 'csapat', cel: 1, szoveg: 'Hirdess csapatot a /csapat paranccsal', xp: 50 },
+  { tipus: 'csere', cel: 1, szoveg: 'Hirdess cserét a /csere paranccsal', xp: 50 },
+  { tipus: 'ertekeles', cel: 1, szoveg: 'Értékelj egy cserepartnert az /ertekeles paranccsal', xp: 40 },
+];
+
+// A /telepites ezeket a szövegeket rakja ki és tűzi ki magától.
+const szovegek = [
+  { kulcs: 'szabályzat', szoveg: `**Üdv az ${K.szerverNev} szerveren!** Ez egy nem hivatalos, rajongói közösség.
+
+1. Légy tisztelettudó, a sértegetés és a zaklatás tilos.
+2. Tilos a gyűlöletbeszéd és a felnőtt tartalom.
+3. Tilos a spam és a reklám a stáb engedélye nélkül.
+4. Tilos a csalás, a hackelés és az exploitok megosztása.
+5. Ne oszd meg senki személyes adatait.
+6. A beszélgetés nyelve magyar.
+7. Mindent a megfelelő csatornába írj.
+8. Pénzért cserélni vagy fiókot adni-venni tilos.
+9. Tartsd be a Discord és a Roblox szabályait.
+10. A stáb döntését tartsd tiszteletben. Ha vitád van, nyiss ticketet.` },
+  { kulcs: 'cserék', szoveg: `**Biztonságos csere**
+- Hirdetni a \`/csere\` paranccsal tudsz, sikeres csere után pedig \`/ertekeles\` paranccsal értékelj.
+- Csak a játékban cserélj, a szerver nem vállal felelősséget az elveszett tárgyakért.
+- Soha ne add meg senkinek a jelszavadat vagy a Roblox-fiókodat.
+- Ne kattints ismeretlen linkekre, és ne tölts le semmit cserepartnertől.
+- A csalókat a csaló-jelentés csatornában jelentsd, képpel együtt.` },
+];
+
+module.exports = { K, rangok, kategoriak, beallitasok, summon, kuldetesSablonok, szovegek };

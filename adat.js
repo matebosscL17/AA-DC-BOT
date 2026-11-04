@@ -2,7 +2,12 @@
 const fs = require('fs');
 const path = require('path');
 const FAJL = path.join(__dirname, 'data.json');
-let adat = { xp: {}, kodok: [], ticketek: {}, nyeremenyek: {} };
+const MENTESEK = path.join(__dirname, 'mentesek');
+const MEGTARTOTT = 7;
+let adat = {
+  xp: {}, kodok: [], ticketek: {}, nyeremenyek: {}, kirakott: {}, warnok: {}, csapatok: {},
+  ertekelesek: {}, napi: {}, kuldetes: {}, gyujtemeny: {},
+};
 
 try {
   if (fs.existsSync(FAJL)) adat = { ...adat, ...JSON.parse(fs.readFileSync(FAJL, 'utf8')) };
@@ -24,4 +29,15 @@ function mentMost() {
   fs.renameSync(ideiglenes, FAJL);
 }
 
-module.exports = { adat, ment, mentMost };
+// Naponta egy másolatot készít, és csak az utolsó 7-et tartja meg.
+function napiMentes() {
+  mentMost();
+  fs.mkdirSync(MENTESEK, { recursive: true });
+  const cel = path.join(MENTESEK, `data-${new Date().toISOString().slice(0, 10)}.json`);
+  if (fs.existsSync(cel)) return;
+  fs.copyFileSync(FAJL, cel);
+  const regiek = fs.readdirSync(MENTESEK).filter((f) => f.endsWith('.json')).sort().slice(0, -MEGTARTOTT);
+  for (const f of regiek) fs.unlinkSync(path.join(MENTESEK, f));
+}
+
+module.exports = { adat, ment, mentMost, napiMentes };

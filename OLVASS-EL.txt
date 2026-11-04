@@ -10,5 +10,13 @@ ANIME ADVENTURES HU BOT
    Az újraépítés a rangválasztót és a ticket gombot is kirakja.
    Csak frissítésnél: a bejelentések csatornában /rangvalaszto, a ticket csatornában /ticketpanel
 
+FOLYAMATOS FUTÁS PM2-VEL (összeomlás után magától újraindul)
+   npm install -g pm2
+   pm2 start ecosystem.config.js
+   pm2 save
+Hasznos: pm2 logs (naplók), pm2 restart aabot, pm2 stop aabot
+
+MENTÉS: a bot naponta másolatot készít a mentesek mappába, az utolsó 7 marad meg.
+
 A rangokat, csatornákat és beállításokat a config.js fájlban tudod átírni.
 A tokent soha ne küldd el senkinek.

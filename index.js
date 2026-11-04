@@ -1,13 +1,15 @@
 require('dotenv').config();
 const {
   Client, GatewayIntentBits: G, Partials, Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder,
-  ButtonStyle, ChannelType, MessageFlags, PermissionFlagsBits: P,
+  ButtonStyle, ChannelType, MessageFlags, PermissionFlagsBits: P, AttachmentBuilder,
 } = require('discord.js');
-const { K, rangok, beallitasok: B, summon } = require('./config');
-const { adat, ment, mentMost } = require('./adat');
+const path = require('path');
+const { K, rangok, beallitasok: B, summon, szovegek } = require('./config');
+const { adat, ment, mentMost, napiMentes } = require('./adat');
 const { xpSzinthez, szintXpbol, rangFrissites } = require('./szintek');
 const { telepites, ujraepites, stabNevek } = require('./telepites');
 const parancsok = require('./parancsok');
+const funkciok = require('./funkciok');
 
 if (!process.env.TOKEN || process.env.TOKEN.startsWith('ide_')) {
   console.error('Hiányzik a token! Írd be a .env fájlba: TOKEN=a_bot_tokenje');
@@ -30,14 +32,36 @@ function log(guild, szoveg) {
   csatorna(guild, 'logok')?.send({ content: szoveg, allowedMentions: { parse: [] } }).catch(() => {});
 }
 
+async function xpAd(tag, mennyiseg, cs) {
+  const regiXp = adat.xp[tag.id] ?? 0;
+  const ujXp = regiXp + mennyiseg;
+  adat.xp[tag.id] = ujXp;
+  ment();
+  const ujSzint = szintXpbol(ujXp);
+  if (ujSzint > szintXpbol(regiXp)) {
+    await rangFrissites(tag, ujSzint).catch(console.error);
+    await cs?.send({
+      content: `🎉 ${tag} elérte a **${ujSzint}. szintet**!`,
+      allowedMentions: { users: [tag.id] },
+    }).catch(() => {});
+  }
+}
+
+const funk = funkciok({ csatorna, log, xpAd });
+
 // ---------- Indulás ----------
 client.once(Events.ClientReady, async () => {
   console.log(`Bejelentkezve: ${client.user.tag}`);
   for (const guild of client.guilds.cache.values()) {
     await guild.commands.set(parancsok).catch((e) => console.error('Parancshiba:', e.message));
   }
-  setInterval(nyeremenyEllenorzes, 30_000);
+  setInterval(() => {
+    nyeremenyEllenorzes();
+    funk.csapatLejarat(client).catch(console.error);
+  }, 30_000);
   nyeremenyEllenorzes();
+  napiMentes();
+  setInterval(napiMentes, 3_600_000);
 });
 client.on(Events.GuildCreate, (guild) => guild.commands.set(parancsok).catch(console.error));
 
@@ -47,8 +71,16 @@ client.on(Events.GuildMemberAdd, async (tag) => {
   if (genin) await tag.roles.add(genin).catch(console.error);
   const altalanos = csatorna(tag.guild, 'általános');
   const szabalyzat = csatorna(tag.guild, 'szabályzat');
-  altalanos?.send(`⛩️ Üdv a(z) **${K.szerverNev}** szerveren, ${tag}! `
-    + `Olvasd el a ${szabalyzat ?? 'szabályzatot'}, aztán érezd otthon magad. 🌸`).catch(() => {});
+  altalanos?.send({
+    content: `⛩️ ${tag}`,
+    embeds: [new EmbedBuilder().setColor(ROZSA)
+      .setTitle(`Üdv itt, ${tag.user.displayName}!`)
+      .setDescription(`Te vagy a(z) **${tag.guild.memberCount}.** tagunk a(z) **${K.szerverNev}** szerveren.\n\n`
+        + `📜 Olvasd el: ${szabalyzat ?? 'a szabályzatot'}\n📅 Írd be: \`/napi\`\n🎲 Próbáld ki: \`/summon\``)
+      .setThumbnail(tag.user.displayAvatarURL({ size: 256 }))
+      .setImage('attachment://udvozlo.png')],
+    files: [new AttachmentBuilder(path.join(__dirname, 'assets', 'udvozlo.png'), { name: 'udvozlo.png' })],
+  }).catch(console.error);
 });
 
 // ---------- Üzenetek: moderáció és XP ----------
@@ -80,18 +112,10 @@ client.on(Events.MessageCreate, async (uzenet) => {
     }
   }
 
+  await funk.halad(uzenet.member, 'uzenet', uzenet.channel);
   if (most - (xpIdok.get(id) ?? 0) < B.xpVarakozasMp * 1000) return;
   xpIdok.set(id, most);
-  const regiXp = adat.xp[id] ?? 0;
-  const ujXp = regiXp + veletlen(B.uzenetXpMin, B.uzenetXpMax);
-  adat.xp[id] = ujXp;
-  ment();
-  const regiSzint = szintXpbol(regiXp);
-  const ujSzint = szintXpbol(ujXp);
-  if (ujSzint > regiSzint) {
-    await rangFrissites(uzenet.member, ujSzint).catch(console.error);
-    uzenet.channel.send(`🎉 ${uzenet.author} elérte a **${ujSzint}. szintet**!`).catch(() => {});
-  }
+  await xpAd(uzenet.member, veletlen(B.uzenetXpMin, B.uzenetXpMax), uzenet.channel);
 });
 
 // ---------- Nyereményjáték ----------
@@ -189,6 +213,28 @@ function ticketPanel(cs) {
   });
 }
 
+// Kirakja, ami még nincs kint. Az azonosítók alapján tudja, mi van már a helyén.
+async function kirakOnce(kulcs, cs, kuld, kituz = false) {
+  if (!cs) return;
+  const regi = adat.kirakott[kulcs];
+  if (regi && regi.csatorna === cs.id) {
+    const megvan = await cs.messages.fetch(regi.uzenet).catch(() => null);
+    if (megvan) return;
+  }
+  const u = await kuld(cs);
+  adat.kirakott[kulcs] = { csatorna: cs.id, uzenet: u.id };
+  ment();
+  if (kituz) await u.pin().catch(() => {});
+}
+
+async function kirakasok(guild) {
+  await kirakOnce('rang', csatorna(guild, 'bejelentések'), rangPanel);
+  await kirakOnce('ticket', csatorna(guild, '・ticket'), ticketPanel);
+  for (const sz of szovegek) {
+    await kirakOnce(`szoveg:${sz.kulcs}`, csatorna(guild, sz.kulcs), (cs) => cs.send(sz.szoveg), true);
+  }
+}
+
 // ---------- Telepítés gombjai ----------
 let telepitesFut = false;
 
@@ -201,6 +247,7 @@ async function telepitesGomb(i, ertek) {
     try {
       await i.update({ content: '⏳ Frissítés folyamatban...', components: [] });
       const e = await telepites(i.guild);
+      await kirakasok(i.guild);
       return await i.editReply(`✅ Kész! Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}. Frissített jogok: ${e.jogok}.`);
     } finally {
       telepitesFut = false;
@@ -214,10 +261,7 @@ async function telepitesGomb(i, ertek) {
   try {
     await i.update({ content: '⏳ Törlés és újraépítés folyamatban...', components: [] });
     const e = await ujraepites(i.guild);
-    const bejelentesek = csatorna(i.guild, 'bejelentések');
-    const segitseg = csatorna(i.guild, 'ticket');
-    if (bejelentesek) await rangPanel(bejelentesek);
-    if (segitseg) await ticketPanel(segitseg);
+    await kirakasok(i.guild);
     // A csatorna, ahol a parancsot írtad, már törlődött, ezért a stáb-chatbe jelzünk.
     await csatorna(i.guild, 'stáb-chat')?.send(`✅ ${i.user}, kész az újraépítés! `
       + `Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}.`
@@ -245,6 +289,8 @@ async function gomb(i) {
   if (tipus === 'telepites') return telepitesGomb(i, ertek);
 
   if (tipus === 'ticket') return ertek === 'nyitas' ? ticketNyitas(i) : ticketZaras(i);
+
+  if (funk.gombok[tipus]) return funk.gombok[tipus](i, ertek);
 
   if (tipus === 'nyeremeny') {
     const ny = adat.nyeremenyek[ertek];
@@ -346,9 +392,19 @@ const muveletek = {
     let dobas = veletlen(1, summon.reduce((o, s) => o + s.esely, 0));
     const talalat = summon.find((s) => (dobas -= s.esely) <= 0);
     const egyseg = talalat.egysegek[veletlen(0, talalat.egysegek.length - 1)];
-    return i.reply({ embeds: [new EmbedBuilder().setColor(talalat.szin).setTitle(`🎲 ${talalat.ritkasag}!`)
+    const gy = (adat.gyujtemeny[i.user.id] ??= {});
+    gy[egyseg] = (gy[egyseg] ?? 0) + 1;
+    ment();
+    await i.reply({ embeds: [new EmbedBuilder().setColor(talalat.szin).setTitle(`🎲 ${talalat.ritkasag}!`)
       .setDescription(`${i.user} kihúzta: **${egyseg}**`)
       .setFooter({ text: 'Csak szerveres játék, a játékban nem ad semmit.' })] });
+    if (talalat.ritkasag === 'Secret') {
+      await csatorna(i.guild, 'általános')?.send({
+        content: `🌟 **SECRET HÚZÁS!** ${i.user} kihúzta: **${egyseg}**!`,
+        allowedMentions: { parse: [] },
+      }).catch(() => {});
+    }
+    return funk.halad(i.member, 'summon', i.channel);
   },
 
   async szint(i) {
@@ -373,7 +429,7 @@ const muveletek = {
 client.on(Events.InteractionCreate, async (i) => {
   try {
     if (i.isButton()) return await gomb(i);
-    if (i.isChatInputCommand()) return await muveletek[i.commandName]?.(i);
+    if (i.isChatInputCommand()) return await (muveletek[i.commandName] ?? funk.muveletek[i.commandName])?.(i);
   } catch (e) {
     console.error(e);
     const v = { content: '❌ Hiba történt. Nézd meg a bot jogait és a rangja helyét.', ...privat };

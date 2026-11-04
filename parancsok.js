@@ -1,6 +1,9 @@
 const { SlashCommandBuilder: S, PermissionFlagsBits: P } = require('discord.js');
 
 const admin = (b) => b.setDefaultMemberPermissions(P.ManageGuild);
+const jog = (b, j) => b.setDefaultMemberPermissions(j);
+const tagOpcio = (o) => o.setName('tag').setDescription('Melyik tag?').setRequired(true);
+const indokOpcio = (o) => o.setName('indok').setDescription('Miért?').setMaxLength(300);
 
 module.exports = [
   admin(new S().setName('telepites').setDescription('Létrehozza a rangokat és csatornákat, és beállítja a jogokat')),
@@ -23,4 +26,31 @@ module.exports = [
   new S().setName('szint').setDescription('Megmutatja a szintet és az XP-t')
     .addUserOption((o) => o.setName('tag').setDescription('Kinek a szintjét nézzük?')),
   new S().setName('ranglista').setDescription('A 10 legaktívabb tag'),
+  jog(new S().setName('warn').setDescription('Figyelmeztetés adása')
+    .addUserOption(tagOpcio)
+    .addStringOption((o) => o.setName('indok').setDescription('Miért?').setRequired(true).setMaxLength(300)), P.ModerateMembers),
+  jog(new S().setName('figyelmeztetesek').setDescription('Egy tag figyelmeztetései').addUserOption(tagOpcio), P.ModerateMembers),
+  jog(new S().setName('warn-torles').setDescription('Egy tag összes figyelmeztetésének törlése').addUserOption(tagOpcio), P.ModerateMembers),
+  jog(new S().setName('nemit').setDescription('Tag némítása')
+    .addUserOption(tagOpcio)
+    .addIntegerOption((o) => o.setName('perc').setDescription('Hány perc?').setRequired(true).setMinValue(1).setMaxValue(40320))
+    .addStringOption(indokOpcio), P.ModerateMembers),
+  jog(new S().setName('kirug').setDescription('Tag kirúgása').addUserOption(tagOpcio).addStringOption(indokOpcio), P.KickMembers),
+  jog(new S().setName('kitilt').setDescription('Tag kitiltása').addUserOption(tagOpcio).addStringOption(indokOpcio), P.BanMembers),
+  jog(new S().setName('torles').setDescription('Üzenetek törlése ebben a csatornában')
+    .addIntegerOption((o) => o.setName('darab').setDescription('Hány üzenet?').setRequired(true).setMinValue(1).setMaxValue(100)), P.ManageMessages),
+  new S().setName('csapat').setDescription('Csapatkereső hirdetés')
+    .addStringOption((o) => o.setName('mit').setDescription('Mihez kerestek csapatot?').setRequired(true).setMaxLength(150))
+    .addIntegerOption((o) => o.setName('letszam').setDescription('Hány fő összesen?').setRequired(true).setMinValue(2).setMaxValue(20)),
+  new S().setName('csere').setDescription('Cserehirdetés')
+    .addStringOption((o) => o.setName('adok').setDescription('Mit adsz?').setRequired(true).setMaxLength(300))
+    .addStringOption((o) => o.setName('kerek').setDescription('Mit kérsz?').setRequired(true).setMaxLength(300)),
+  new S().setName('ertekeles').setDescription('Cserepartner értékelése')
+    .addUserOption(tagOpcio)
+    .addIntegerOption((o) => o.setName('pont').setDescription('1-5 csillag').setRequired(true).setMinValue(1).setMaxValue(5)),
+  new S().setName('hirnev').setDescription('Egy tag cserés értékelése')
+    .addUserOption((o) => o.setName('tag').setDescription('Melyik tag?')),
+  new S().setName('napi').setDescription('Napi jutalom és küldetések'),
+  new S().setName('gyujtemeny').setDescription('A summon gyűjteményed')
+    .addUserOption((o) => o.setName('tag').setDescription('Kinek a gyűjteménye?')),
 ].map((c) => c.toJSON());
