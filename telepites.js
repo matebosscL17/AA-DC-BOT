@@ -143,6 +143,9 @@ async function ujraepites(guild) {
   }
   adat.ticketek = {};
   adat.nyeremenyek = {};
+  adat.csapatok = {};
+  adat.hangszobak = {};
+  adat.emlekeztetok = [];
   ment();
 
   const eredmeny = await telepites(guild);

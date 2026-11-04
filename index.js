@@ -18,7 +18,7 @@ if (!process.env.TOKEN || process.env.TOKEN.startsWith('ide_')) {
 }
 
 const client = new Client({
-  intents: [G.Guilds, G.GuildMembers, G.GuildMessages, G.MessageContent],
+  intents: [G.Guilds, G.GuildMembers, G.GuildMessages, G.MessageContent, G.GuildVoiceStates, G.GuildInvites],
   partials: [Partials.GuildMember],
 });
 
@@ -37,6 +37,7 @@ async function xpAd(tag, mennyiseg, cs) {
   const regiXp = adat.xp[tag.id] ?? 0;
   const ujXp = regiXp + mennyiseg;
   adat.xp[tag.id] = ujXp;
+  funk.hetiPont(tag.id, 'xp', mennyiseg);
   ment();
   const ujSzint = szintXpbol(ujXp);
   if (ujSzint > szintXpbol(regiXp)) {
@@ -58,16 +59,38 @@ client.once(Events.ClientReady, async () => {
   }
   setInterval(() => {
     nyeremenyEllenorzes();
-    funk.csapatLejarat(client).catch(console.error);
+    funk.csapatTick(client).catch(console.error);
   }, 30_000);
   nyeremenyEllenorzes();
   napiMentes();
   setInterval(napiMentes, 3_600_000);
+  for (const guild of client.guilds.cache.values()) await meghivoOlvasas(guild);
 });
 client.on(Events.GuildCreate, (guild) => guild.commands.set(parancsok).catch(console.error));
 
+// ---------- Meghívók követése ----------
+const meghivoCache = new Map();
+
+async function meghivoOlvasas(guild) {
+  const lista = await guild.invites.fetch().catch(() => null);
+  if (!lista) return null;
+  const regi = meghivoCache.get(guild.id);
+  const uj = new Map([...lista.values()].map((m) => [m.code, { uses: m.uses, inviter: m.inviter?.id }]));
+  meghivoCache.set(guild.id, uj);
+  return { regi, uj };
+}
+
+client.on(Events.InviteCreate, (m) => meghivoOlvasas(m.guild));
+client.on(Events.InviteDelete, (m) => meghivoOlvasas(m.guild));
+client.on(Events.VoiceStateUpdate, (regi, uj) => funk.hangValtozas(regi, uj).catch(console.error));
+
 // ---------- Üdvözlés ----------
 client.on(Events.GuildMemberAdd, async (tag) => {
+  const m = await meghivoOlvasas(tag.guild);
+  if (m?.regi) {
+    const hasznalt = [...m.uj.entries()].find(([kod, v]) => v.uses > (m.regi.get(kod)?.uses ?? 0));
+    await funk.meghivoJovairas(tag, hasznalt?.[1].inviter).catch(console.error);
+  }
   const genin = rangNev(tag.guild, rangok.szintek.at(-1).nev);
   if (genin) await tag.roles.add(genin).catch(console.error);
   const altalanos = csatorna(tag.guild, 'általános');
@@ -188,7 +211,7 @@ async function ticketZaras(i) {
 }
 
 // ---------- Panelek ----------
-function rangPanel(cs) {
+function rangPanelTartalom() {
   const sorok = [];
   const gombok = rangok.ertesitesek.map((nev) => {
     const [emoji, ...resz] = nev.split(' ');
@@ -198,12 +221,14 @@ function rangPanel(cs) {
   for (let n = 0; n < gombok.length; n += 5) {
     sorok.push(new ActionRowBuilder().addComponents(gombok.slice(n, n + 5)));
   }
-  return cs.send({
+  return {
     embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Értesítések')
       .setDescription('Nyomd meg, amiről értesítést kérsz. Újra megnyomva leveszi a rangot.')],
     components: sorok,
-  });
+  };
 }
+
+const rangPanel = (cs) => cs.send(rangPanelTartalom());
 
 function ticketPanel(cs) {
   return cs.send({
@@ -236,7 +261,10 @@ async function kirakOnce(kulcs, cs, kuld, { kituz = false, verzio, frissit } = {
 }
 
 async function kirakasok(guild) {
-  await kirakOnce('rang', csatorna(guild, 'bejelentések'), rangPanel);
+  await kirakOnce('rang', csatorna(guild, 'bejelentések'), rangPanel, {
+    verzio: rangok.ertesitesek.join(),
+    frissit: (u) => u.edit(rangPanelTartalom()),
+  });
   await kirakOnce('ticket', csatorna(guild, '・ticket'), ticketPanel);
   for (const sz of szovegek) {
     const tartalom = sz.cim
@@ -319,6 +347,14 @@ async function gomb(i) {
   }
 }
 
+async function pingPoszt(guild, kulcs, rangNeve, embed) {
+  const cs = csatorna(guild, kulcs);
+  if (!cs) return null;
+  const r = rangNev(guild, rangNeve);
+  await cs.send({ content: r ? `${r}` : undefined, embeds: [embed], allowedMentions: { roles: r ? [r.id] : [] } });
+  return cs;
+}
+
 // ---------- Perjeles parancsok ----------
 const muveletek = {
   async telepites(i) {
@@ -356,6 +392,13 @@ const muveletek = {
     return i.reply({ content: `Kiraktam ide: ${cs}`, ...privat });
   },
 
+  async hir(i) {
+    const cs = await pingPoszt(i.guild, 'hírek-és-kódok', '🔔 Frissítések', new EmbedBuilder().setColor(ROZSA)
+      .setTitle(`📰 ${i.options.getString('cim')}`)
+      .setDescription(i.options.getString('szoveg').replaceAll('\\n', '\n')).setTimestamp());
+    return i.reply({ content: cs ? `Kiraktam ide: ${cs}` : 'Nem találom a hírek csatornát.', ...privat });
+  },
+
   async nyeremeny(i) {
     const nyeremeny = i.options.getString('nyeremeny');
     const perc = i.options.getInteger('perc');
@@ -379,7 +422,10 @@ const muveletek = {
     }
     adat.kodok.push({ kod, jutalom: i.options.getString('jutalom') ?? '' });
     ment();
-    return i.reply({ content: `Felvéve: \`${kod}\``, ...privat });
+    const jutalom = i.options.getString('jutalom');
+    await pingPoszt(i.guild, 'hírek-és-kódok', '🔔 Kódok', new EmbedBuilder().setColor(0x2ed573)
+      .setTitle('🎁 Új kód!').setDescription(`\`${kod}\`${jutalom ? `\n${jutalom}` : ''}`));
+    return i.reply({ content: `Felvéve és kirakva: \`${kod}\``, ...privat });
   },
 
   async 'kod-torol'(i) {
@@ -414,6 +460,7 @@ const muveletek = {
       .setDescription(`${i.user} kihúzta: **${egyseg}**`)
       .setFooter({ text: 'Csak szerveres játék, a játékban nem ad semmit.' })] });
     if (talalat.ritkasag === 'Secret') {
+      funk.hetiPont(i.user.id, 'secret');
       await csatorna(i.guild, 'általános')?.send({
         content: `🌟 **SECRET HÚZÁS!** ${i.user} kihúzta: **${egyseg}**!`,
         allowedMentions: { parse: [] },

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder: S, PermissionFlagsBits: P } = require('discord.js');
+const { lfgModok } = require('./config');
 
 const admin = (b) => b.setDefaultMemberPermissions(P.ManageGuild);
 const jog = (b, j) => b.setDefaultMemberPermissions(j);
@@ -39,9 +40,26 @@ module.exports = [
   jog(new S().setName('kitilt').setDescription('Tag kitiltása').addUserOption(tagOpcio).addStringOption(indokOpcio), P.BanMembers),
   jog(new S().setName('torles').setDescription('Üzenetek törlése ebben a csatornában')
     .addIntegerOption((o) => o.setName('darab').setDescription('Hány üzenet?').setRequired(true).setMinValue(1).setMaxValue(100)), P.ManageMessages),
-  new S().setName('csapat').setDescription('Csapatkereső hirdetés')
-    .addStringOption((o) => o.setName('mit').setDescription('Mihez kerestek csapatot?').setRequired(true).setMaxLength(150))
-    .addIntegerOption((o) => o.setName('letszam').setDescription('Hány fő összesen?').setRequired(true).setMinValue(2).setMaxValue(20)),
+  new S().setName('lfg').setDescription('Csapatkereső hirdetés')
+    .addStringOption((o) => o.setName('mod').setDescription('Játékmód').setRequired(true)
+      .addChoices(...lfgModok.map((m) => ({ name: m.nev, value: m.nev }))))
+    .addIntegerOption((o) => o.setName('letszam').setDescription('Hány fő összesen?').setRequired(true).setMinValue(2).setMaxValue(10))
+    .addIntegerOption((o) => o.setName('kezdes_perc').setDescription('Hány perc múlva kezdtek? Üresen: most').setMinValue(1).setMaxValue(1440))
+    .addStringOption((o) => o.setName('link').setDescription('Roblox privát szerver link, csak a csapat kapja meg').setMaxLength(300))
+    .addIntegerOption((o) => o.setName('min_szint').setDescription('Legalább ilyen szerverszint kell').setMinValue(1).setMaxValue(100))
+    .addStringOption((o) => o.setName('elvaras').setDescription('Például: csak haladóknak').setMaxLength(150)),
+  new S().setName('lfg-toplista').setDescription('A legtöbb közös játékot lejátszó tagok'),
+  new S().setName('meghivok').setDescription('Hány tagot hívott meg valaki')
+    .addUserOption((o) => o.setName('tag').setDescription('Melyik tag?')),
+  new S().setName('heti').setDescription('A heti verseny állása'),
+  new S().setName('csapatom').setDescription('Egység-összeállítás')
+    .addSubcommand((c) => c.setName('beallit').setDescription('A saját összeállításod mentése')
+      .addStringOption((o) => o.setName('egysegek').setDescription('Egységek vesszővel elválasztva').setRequired(true).setMaxLength(500)))
+    .addSubcommand((c) => c.setName('nez').setDescription('Összeállítás megnézése')
+      .addUserOption((o) => o.setName('tag').setDescription('Kié?'))),
+  admin(new S().setName('hir').setDescription('Hír kirakása pingeléssel')
+    .addStringOption((o) => o.setName('cim').setDescription('A hír címe').setRequired(true).setMaxLength(200))
+    .addStringOption((o) => o.setName('szoveg').setDescription('Szöveg, új sor: \\n').setRequired(true).setMaxLength(3000))),
   new S().setName('csere').setDescription('Cserehirdetés')
     .addStringOption((o) => o.setName('adok').setDescription('Mit adsz?').setRequired(true).setMaxLength(300))
     .addStringOption((o) => o.setName('kerek').setDescription('Mit kérsz?').setRequired(true).setMaxLength(300)),

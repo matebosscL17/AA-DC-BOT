@@ -23,7 +23,7 @@ const rangok = {
     { nev: '🍥 Chunin', szin: '#FDCB6E', szint: 5 },
     { nev: '🌱 Genin', szin: '#B2BEC3', szint: 0 },
   ],
-  ertesitesek: ['🔔 Kódok', '🔔 Frissítések', '🔔 Csere', '🔔 Raid', '🔔 Nyereményjáték'],
+  ertesitesek: ['🔔 Kódok', '🔔 Frissítések', '🔔 Csere', '🔔 Raid', '🔔 LFG', '🔔 Nyereményjáték'],
 };
 
 // iras: nincs megadva = mindenki írhat | 'stab' = csak a stáb írhat | 'rejtett' = csak a stáb látja
@@ -103,10 +103,26 @@ const kuldetesSablonok = [
   { tipus: 'uzenet', cel: 25, szoveg: 'Küldj 25 üzenetet', xp: 80 },
   { tipus: 'summon', cel: 1, szoveg: 'Használd a /summon parancsot', xp: 30 },
   { tipus: 'summon', cel: 3, szoveg: 'Használd 3-szor a /summon parancsot', xp: 70 },
-  { tipus: 'csapat', cel: 1, szoveg: 'Hirdess csapatot a /csapat paranccsal', xp: 50 },
+  { tipus: 'csapat', cel: 1, szoveg: 'Hirdess csapatot az /lfg paranccsal', xp: 50 },
   { tipus: 'csere', cel: 1, szoveg: 'Hirdess cserét a /csere paranccsal', xp: 50 },
   { tipus: 'ertekeles', cel: 1, szoveg: 'Értékelj egy cserepartnert az /ertekeles paranccsal', xp: 40 },
 ];
+
+// Az /lfg játékmódjai és az, hogy melyik rangot pingelik
+const lfgModok = [
+  { nev: 'Story', ping: '🔔 LFG' },
+  { nev: 'Infinite', ping: '🔔 LFG' },
+  { nev: 'Challenge', ping: '🔔 LFG' },
+  { nev: 'Raid', ping: '🔔 Raid' },
+  { nev: 'Egyéb', ping: '🔔 LFG' },
+];
+
+const jutalmak = {
+  lfgXp: 50,          // XP egy közösen végigjátszott csapatért
+  lfgMinPerc: 10,     // ennyi percig kell együtt lenni a hangszobában
+  meghivoXp: 100,     // XP minden meghívott új tagért
+  meghivoMinNap: 3,   // ennél frissebb Discord-fiók nem számít meghívásnak
+};
 
 // A /telepites ezeket a szövegeket rakja ki és tűzi ki magától.
 const szovegek = [
@@ -162,4 +178,4 @@ const szovegek = [
 - A csalókat a csaló-jelentés csatornában jelentsd, képpel együtt.` },
 ];
 
-module.exports = { K, rangok, kategoriak, beallitasok, summon, kuldetesSablonok, szovegek };
+module.exports = { K, rangok, kategoriak, beallitasok, summon, kuldetesSablonok, szovegek, lfgModok, jutalmak };

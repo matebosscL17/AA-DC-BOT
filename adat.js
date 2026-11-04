@@ -7,6 +7,8 @@ const MEGTARTOTT = 7;
 let adat = {
   xp: {}, kodok: [], ticketek: {}, nyeremenyek: {}, kirakott: {}, warnok: {}, csapatok: {},
   ertekelesek: {}, napi: {}, kuldetes: {}, gyujtemeny: {},
+  hangszobak: {}, emlekeztetok: [], lfgPontok: {}, meghivok: {}, meghivott: {}, csapatom: {},
+  heti: { het: 0, xp: {}, secret: {}, nyertes: null },
 };
 
 try {
