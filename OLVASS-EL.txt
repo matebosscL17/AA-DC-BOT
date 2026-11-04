@@ -6,7 +6,9 @@ ANIME ADVENTURES HU BOT
    cp .env.pelda .env
    nano .env        (írd be a tokent, mentés: Ctrl+O, Enter, kilépés: Ctrl+X)
    node index.js
-3. Discordon: /telepites, majd a bejelentések csatornában /rangvalaszto, a ticket csatornában /ticketpanel
+3. Discordon: /telepites, majd válaszd a Törlés és újraépítés vagy a Csak frissítés gombot.
+   Az újraépítés a rangválasztót és a ticket gombot is kirakja.
+   Csak frissítésnél: a bejelentések csatornában /rangvalaszto, a ticket csatornában /ticketpanel
 
 A rangokat, csatornákat és beállításokat a config.js fájlban tudod átírni.
 A tokent soha ne küldd el senkinek.

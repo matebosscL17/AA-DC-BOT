@@ -1,5 +1,7 @@
 const { ChannelType, PermissionFlagsBits: P } = require('discord.js');
 const { rangok, kategoriak } = require('./config');
+const { adat, ment } = require('./adat');
+const { szintXpbol, rangFrissites } = require('./szintek');
 
 const stabNevek = rangok.stab.map((r) => r.nev);
 const szinKod = (s) => parseInt(s.replace('#', ''), 16);
@@ -108,4 +110,53 @@ async function telepites(guild) {
   return eredmeny;
 }
 
-module.exports = { telepites, stabNevek };
+// Mindent töröl, újraépíti a szervert, és visszaadja a tagok rangjait.
+async function ujraepites(guild) {
+  await guild.roles.fetch();
+  await guild.channels.fetch();
+  const tagok = await guild.members.fetch();
+
+  // A rangok nevét megjegyezzük, hogy törlés után vissza lehessen adni.
+  const szintNevek = rangok.szintek.map((r) => r.nev);
+  const mentes = new Map();
+  for (const tag of tagok.values()) {
+    if (tag.user.bot) continue;
+    const nevek = [...tag.roles.cache.values()]
+      .filter((r) => r.id !== guild.roles.everyone.id && !r.managed && !szintNevek.includes(r.name))
+      .map((r) => r.name);
+    mentes.set(tag.id, nevek);
+  }
+
+  let kihagyott = 0;
+  for (const c of [...guild.channels.cache.values()]) {
+    await c.delete('Szerver újraépítése').catch((e) => {
+      kihagyott++;
+      console.error(`Nem törölhető csatorna (${c.name}):`, e.message);
+    });
+  }
+  for (const r of [...guild.roles.cache.values()]) {
+    if (r.id === guild.roles.everyone.id || r.managed) continue;
+    await r.delete('Szerver újraépítése').catch((e) => {
+      kihagyott++;
+      console.error(`Nem törölhető rang (${r.name}):`, e.message);
+    });
+  }
+  adat.ticketek = {};
+  adat.nyeremenyek = {};
+  ment();
+
+  const eredmeny = await telepites(guild);
+  eredmeny.kihagyott = kihagyott;
+
+  for (const tag of tagok.values()) {
+    if (tag.user.bot) continue;
+    const nevek = [...(mentes.get(tag.id) ?? [])];
+    if (tag.id === guild.ownerId) nevek.push(rangok.stab[0].nev);
+    const vissza = nevek.map((n) => guild.roles.cache.find((r) => r.name === n)).filter(Boolean);
+    if (vissza.length) await tag.roles.add(vissza).catch((e) => console.error(tag.id, e.message));
+    await rangFrissites(tag, szintXpbol(adat.xp[tag.id] ?? 0)).catch((e) => console.error(tag.id, e.message));
+  }
+  return eredmeny;
+}
+
+module.exports = { telepites, ujraepites, stabNevek };

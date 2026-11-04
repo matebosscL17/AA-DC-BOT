@@ -6,7 +6,7 @@ const {
 const { K, rangok, beallitasok: B, summon } = require('./config');
 const { adat, ment, mentMost } = require('./adat');
 const { xpSzinthez, szintXpbol, rangFrissites } = require('./szintek');
-const { telepites, stabNevek } = require('./telepites');
+const { telepites, ujraepites, stabNevek } = require('./telepites');
 const parancsok = require('./parancsok');
 
 if (!process.env.TOKEN || process.env.TOKEN.startsWith('ide_')) {
@@ -162,6 +162,71 @@ async function ticketZaras(i) {
   setTimeout(() => i.channel.delete().catch(console.error), 5000);
 }
 
+// ---------- Panelek ----------
+function rangPanel(cs) {
+  const sorok = [];
+  const gombok = rangok.ertesitesek.map((nev) => {
+    const [emoji, ...resz] = nev.split(' ');
+    return new ButtonBuilder().setCustomId(`rang:${nev}`).setLabel(resz.join(' ')).setEmoji(emoji)
+      .setStyle(ButtonStyle.Secondary);
+  });
+  for (let n = 0; n < gombok.length; n += 5) {
+    sorok.push(new ActionRowBuilder().addComponents(gombok.slice(n, n + 5)));
+  }
+  return cs.send({
+    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Értesítések')
+      .setDescription('Nyomd meg, amiről értesítést kérsz. Újra megnyomva leveszi a rangot.')],
+    components: sorok,
+  });
+}
+
+function ticketPanel(cs) {
+  return cs.send({
+    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎫 Segítség')
+      .setDescription('Kérdésed van, vagy bajod akadt? Nyiss ticketet, és a stáb segít.')],
+    components: [new ActionRowBuilder().addComponents(new ButtonBuilder()
+      .setCustomId('ticket:nyitas').setLabel('Ticket nyitása').setEmoji('🎫').setStyle(ButtonStyle.Primary))],
+  });
+}
+
+// ---------- Telepítés gombjai ----------
+let telepitesFut = false;
+
+async function telepitesGomb(i, ertek) {
+  if (ertek === 'megse') return i.update({ content: 'Rendben, nem történt semmi.', components: [] });
+  if (telepitesFut) return i.update({ content: 'A telepítés már fut, várj egy kicsit.', components: [] });
+
+  if (ertek === 'frissites') {
+    telepitesFut = true;
+    try {
+      await i.update({ content: '⏳ Frissítés folyamatban...', components: [] });
+      const e = await telepites(i.guild);
+      return await i.editReply(`✅ Kész! Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}. Frissített jogok: ${e.jogok}.`);
+    } finally {
+      telepitesFut = false;
+    }
+  }
+
+  if (!i.member.permissions.has(P.Administrator)) {
+    return i.update({ content: 'A teljes törléshez Rendszergazda jog kell.', components: [] });
+  }
+  telepitesFut = true;
+  try {
+    await i.update({ content: '⏳ Törlés és újraépítés folyamatban...', components: [] });
+    const e = await ujraepites(i.guild);
+    const bejelentesek = csatorna(i.guild, 'bejelentések');
+    const segitseg = csatorna(i.guild, 'ticket');
+    if (bejelentesek) await rangPanel(bejelentesek);
+    if (segitseg) await ticketPanel(segitseg);
+    // A csatorna, ahol a parancsot írtad, már törlődött, ezért a stáb-chatbe jelzünk.
+    await csatorna(i.guild, 'stáb-chat')?.send(`✅ ${i.user}, kész az újraépítés! `
+      + `Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}.`
+      + `${e.kihagyott ? ` Nem sikerült törölni: ${e.kihagyott} elem, a részletek a Termuxban.` : ''}`);
+  } finally {
+    telepitesFut = false;
+  }
+}
+
 // ---------- Gombok ----------
 async function gomb(i) {
   const [tipus, ertek] = i.customId.split(':');
@@ -176,6 +241,8 @@ async function gomb(i) {
     await i.member.roles.add(r);
     return i.reply({ content: `Felvetted: **${r.name}**`, ...privat });
   }
+
+  if (tipus === 'telepites') return telepitesGomb(i, ertek);
 
   if (tipus === 'ticket') return ertek === 'nyitas' ? ticketNyitas(i) : ticketZaras(i);
 
@@ -194,36 +261,27 @@ async function gomb(i) {
 // ---------- Perjeles parancsok ----------
 const muveletek = {
   async telepites(i) {
-    await i.deferReply(privat);
-    const e = await telepites(i.guild);
-    return i.editReply(`✅ Kész! Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}. Frissített jogok: ${e.jogok}.`);
+    return i.reply({
+      content: '⚠️ **Mit szeretnél?**\n'
+        + '**Törlés és újraépítés:** MINDEN csatorna, üzenet és rang végleg törlődik, majd a bot újra felépíti a szervert. '
+        + 'Ez nem vonható vissza. A tagok rangjait és az XP-t a bot megtartja.\n'
+        + '**Csak frissítés:** semmit nem töröl, csak pótolja a hiányzókat és beállítja a jogokat.',
+      components: [new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('telepites:torles').setLabel('Törlés és újraépítés').setEmoji('🗑️').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('telepites:frissites').setLabel('Csak frissítés').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('telepites:megse').setLabel('Mégse').setStyle(ButtonStyle.Secondary),
+      )],
+      ...privat,
+    });
   },
 
   async rangvalaszto(i) {
-    const sorok = [];
-    const gombok = rangok.ertesitesek.map((nev) => {
-      const [emoji, ...resz] = nev.split(' ');
-      return new ButtonBuilder().setCustomId(`rang:${nev}`).setLabel(resz.join(' ')).setEmoji(emoji)
-        .setStyle(ButtonStyle.Secondary);
-    });
-    for (let n = 0; n < gombok.length; n += 5) {
-      sorok.push(new ActionRowBuilder().addComponents(gombok.slice(n, n + 5)));
-    }
-    await i.channel.send({
-      embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Értesítések')
-        .setDescription('Nyomd meg, amiről értesítést kérsz. Újra megnyomva leveszi a rangot.')],
-      components: sorok,
-    });
+    await rangPanel(i.channel);
     return i.reply({ content: 'Kész!', ...privat });
   },
 
   async ticketpanel(i) {
-    await i.channel.send({
-      embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎫 Segítség')
-        .setDescription('Kérdésed van, vagy bajod akadt? Nyiss ticketet, és a stáb segít.')],
-      components: [new ActionRowBuilder().addComponents(new ButtonBuilder()
-        .setCustomId('ticket:nyitas').setLabel('Ticket nyitása').setEmoji('🎫').setStyle(ButtonStyle.Primary))],
-    });
+    await ticketPanel(i.channel);
     return i.reply({ content: 'Kész!', ...privat });
   },
 
