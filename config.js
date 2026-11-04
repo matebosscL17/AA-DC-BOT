@@ -110,18 +110,50 @@ const kuldetesSablonok = [
 
 // A /telepites ezeket a szövegeket rakja ki és tűzi ki magától.
 const szovegek = [
-  { kulcs: 'szabályzat', szoveg: `**Üdv az ${K.szerverNev} szerveren!** Ez egy nem hivatalos, rajongói közösség.
+  { kulcs: 'szabályzat', cim: '⛩️ Szerverszabályzat', szoveg: `Üdv az **${K.szerverNev}** szerveren! Ez egy nem hivatalos, rajongói közösség, amely nem áll kapcsolatban a játék készítőivel vagy a Robloxszal. A szerveren maradással elfogadod az alábbi szabályokat.
 
-1. Légy tisztelettudó, a sértegetés és a zaklatás tilos.
-2. Tilos a gyűlöletbeszéd és a felnőtt tartalom.
-3. Tilos a spam és a reklám a stáb engedélye nélkül.
-4. Tilos a csalás, a hackelés és az exploitok megosztása.
-5. Ne oszd meg senki személyes adatait.
-6. A beszélgetés nyelve magyar.
-7. Mindent a megfelelő csatornába írj.
-8. Pénzért cserélni vagy fiókot adni-venni tilos.
-9. Tartsd be a Discord és a Roblox szabályait.
-10. A stáb döntését tartsd tiszteletben. Ha vitád van, nyiss ticketet.` },
+### 🤝 Tisztelet
+> **1.** Bánj mindenkivel tisztelettel, a kezdőkkel is.
+> **2.** Tilos a sértegetés, a zaklatás, a fenyegetés és a célzott piszkálás.
+> **3.** Tilos a gyűlöletbeszéd, bármilyen csoportról legyen szó.
+> **4.** A vitákat ne a chaten rendezd, inkább nyiss ticketet.
+
+### 💬 Csevegés
+> **5.** A beszélgetés nyelve magyar.
+> **6.** Mindent a témához illő csatornába írj.
+> **7.** Tilos a spam, a flood és a felesleges pingelés.
+> **8.** Stábtagot és rangot csak indokolt esetben pingelj.
+> **9.** Reklámozni és meghívót küldeni csak a stáb engedélyével lehet.
+
+### 🔞 Tartalom
+> **10.** Tilos a felnőtt, a véres és a sokkoló tartalom, a profilképeket és neveket is beleértve.
+> **11.** Tilos mások személyes adatait, képeit vagy privát beszélgetéseit megosztani.
+> **12.** Tilos politikai és vallási vitákat szítani.
+
+### 🎮 Játék és csalás
+> **13.** Tilos a hackek, exploitok és illegális scriptek használata, ajánlása vagy megosztása.
+> **14.** Tilos a más játékosok átverése, a kamu kódok és a kamu linkek terjesztése.
+> **15.** A kihúzott egységekről készült képek legyenek valódiak.
+
+### 🔄 Csere
+> **16.** Csak a játékon belül cserélj, és hirdetni a \`/csere\` paranccsal tudsz.
+> **17.** Tilos a pénzért, Robuxért vagy más játék tárgyaiért történő csere.
+> **18.** Tilos a fiókok adása, vétele és megosztása.
+> **19.** A szerver nem vállal felelősséget az elveszett tárgyakért.
+
+### 🔊 Hangcsatornák
+> **20.** Ne kiabálj, ne zenélj és ne használj hangtorzítót mások zavarására.
+> **21.** Beszélgetésről engedély nélkül ne készíts felvételt.
+
+### ⚖️ Büntetések
+> A stáb a szabályszegés súlyától függően dönt: **figyelmeztetés → némítás → kirúgás → kitiltás**. Súlyos esetben az első lépések kimaradhatnak.
+> A bot automatikusan törli a meghívókat és a gyanús linkeket, a spamelőket pedig 5 percre némítja.
+> Ha igazságtalannak érzel egy döntést, nyiss ticketet, és ne vitatkozz nyilvánosan.
+
+### 🛡️ Biztonság
+> A stáb soha nem kéri a jelszavadat. Ne add meg senkinek a Roblox- vagy Discord-fiókod adatait, és ne kattints ismeretlen linkekre.
+
+*A Discord és a Roblox szabályai itt is érvényesek. A stáb a szabályzatot bármikor módosíthatja.*` },
   { kulcs: 'cserék', szoveg: `**Biztonságos csere**
 - Hirdetni a \`/csere\` paranccsal tudsz, sikeres csere után pedig \`/ertekeles\` paranccsal értékelj.
 - Csak a játékban cserélj, a szerver nem vállal felelősséget az elveszett tárgyakért.

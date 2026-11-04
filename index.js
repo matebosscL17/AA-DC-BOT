@@ -4,6 +4,7 @@ const {
   ButtonStyle, ChannelType, MessageFlags, PermissionFlagsBits: P, AttachmentBuilder,
 } = require('discord.js');
 const path = require('path');
+const { createHash } = require('crypto');
 const { K, rangok, beallitasok: B, summon, szovegek } = require('./config');
 const { adat, ment, mentMost, napiMentes } = require('./adat');
 const { xpSzinthez, szintXpbol, rangFrissites } = require('./szintek');
@@ -213,16 +214,23 @@ function ticketPanel(cs) {
   });
 }
 
-// Kirakja, ami még nincs kint. Az azonosítók alapján tudja, mi van már a helyén.
-async function kirakOnce(kulcs, cs, kuld, kituz = false) {
+// Kirakja, ami még nincs kint. Ha egy szöveg megváltozott, a régi üzenetet frissíti.
+async function kirakOnce(kulcs, cs, kuld, { kituz = false, verzio, frissit } = {}) {
   if (!cs) return;
   const regi = adat.kirakott[kulcs];
   if (regi && regi.csatorna === cs.id) {
     const megvan = await cs.messages.fetch(regi.uzenet).catch(() => null);
-    if (megvan) return;
+    if (megvan) {
+      if (verzio && regi.verzio !== verzio) {
+        await frissit(megvan);
+        regi.verzio = verzio;
+        ment();
+      }
+      return;
+    }
   }
   const u = await kuld(cs);
-  adat.kirakott[kulcs] = { csatorna: cs.id, uzenet: u.id };
+  adat.kirakott[kulcs] = { csatorna: cs.id, uzenet: u.id, verzio };
   ment();
   if (kituz) await u.pin().catch(() => {});
 }
@@ -231,7 +239,14 @@ async function kirakasok(guild) {
   await kirakOnce('rang', csatorna(guild, 'bejelentések'), rangPanel);
   await kirakOnce('ticket', csatorna(guild, '・ticket'), ticketPanel);
   for (const sz of szovegek) {
-    await kirakOnce(`szoveg:${sz.kulcs}`, csatorna(guild, sz.kulcs), (cs) => cs.send(sz.szoveg), true);
+    const tartalom = sz.cim
+      ? { content: '', embeds: [new EmbedBuilder().setColor(ROZSA).setTitle(sz.cim).setDescription(sz.szoveg)] }
+      : { content: sz.szoveg };
+    await kirakOnce(`szoveg:${sz.kulcs}`, csatorna(guild, sz.kulcs), (cs) => cs.send(tartalom), {
+      kituz: true,
+      verzio: createHash('sha1').update(sz.szoveg).digest('hex'),
+      frissit: (u) => u.edit(tartalom),
+    });
   }
 }
 
