@@ -84,6 +84,19 @@ client.on(Events.InviteCreate, (m) => meghivoOlvasas(m.guild));
 client.on(Events.InviteDelete, (m) => meghivoOlvasas(m.guild));
 client.on(Events.VoiceStateUpdate, (regi, uj) => funk.hangValtozas(regi, uj).catch(console.error));
 
+const udvozloCimek = [
+  'Új hős lépett a csatatérre!',
+  'Secret húzás! Új tag érkezett!',
+  'A banner ma ránk mosolygott!',
+  'Új egység csatlakozott a csapathoz!',
+];
+const udvozloSorok = [
+  'Ritkaság: ismeretlen. Potenciál: hatalmas. Jó, hogy itt vagy!',
+  'Már csak te hiányoztál a csapatból. Üdv köztünk!',
+  'A hullámok egyre nehezebbek, de most már eggyel többen vagyunk.',
+  'Innen indul a kalandod. Az Ultra Instinct már csak pár szintre van.',
+];
+
 // ---------- Üdvözlés ----------
 client.on(Events.GuildMemberAdd, async (tag) => {
   const m = await meghivoOlvasas(tag.guild);
@@ -95,15 +108,20 @@ client.on(Events.GuildMemberAdd, async (tag) => {
   if (genin) await tag.roles.add(genin).catch(console.error);
   const altalanos = csatorna(tag.guild, 'üdvözlő') ?? csatorna(tag.guild, 'általános');
   const szabalyzat = csatorna(tag.guild, 'szabályzat');
+  const rangvalaszto = csatorna(tag.guild, 'rangválasztó');
   altalanos?.send({
-    content: `⛩️ ${tag}`,
+    content: `${tag} megérkezett! ⚔️`,
     embeds: [new EmbedBuilder().setColor(ROZSA)
-      .setTitle(`Üdv, ${tag.user.displayName}! 👋`)
-      .setDescription(`Te vagy a **${tag.guild.memberCount}.** tagunk. Így indulj el:\n\n`
-        + `\`1\` Olvasd el: ${szabalyzat ?? 'a szabályzatot'}\n`
-        + `\`2\` Válassz rangot: ${csatorna(tag.guild, 'rangválasztó') ?? 'a rangválasztóban'}\n`
-        + `\`3\` Vedd fel a jutalmad: \`/napi\`\n`
-        + `\`4\` Keress csapatot: \`/lfg\``)
+      .setTitle(udvozloCimek[veletlen(0, udvozloCimek.length - 1)])
+      .setDescription(`${udvozloSorok[veletlen(0, udvozloSorok.length - 1)]}\n\n**Első küldetéseid**\n`
+        + `📜 Olvasd el: ${szabalyzat ?? 'a szabályzatot'}\n`
+        + `🎭 Válassz rangot: ${rangvalaszto ?? 'a rangválasztóban'}\n`
+        + `🎁 Vedd fel az első jutalmad: \`/napi\`\n`
+        + `🤝 Keress csapatot: \`/lfg\``)
+      .addFields(
+        { name: 'Kalandor', value: `#${tag.guild.memberCount}`, inline: true },
+        { name: 'Kezdő rang', value: genin?.name ?? rangok.szintek.at(-1).nev, inline: true },
+      )
       .setThumbnail(tag.user.displayAvatarURL({ size: 256 }))
       .setImage('attachment://udvozlo.png')],
     files: [new AttachmentBuilder(path.join(__dirname, 'assets', 'udvozlo.png'), { name: 'udvozlo.png' })],
