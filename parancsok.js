@@ -3,7 +3,7 @@ const { SlashCommandBuilder: S, PermissionFlagsBits: P } = require('discord.js')
 const admin = (b) => b.setDefaultMemberPermissions(P.ManageGuild);
 
 module.exports = [
-  admin(new S().setName('telepites').setDescription('Létrehozza a rangokat, kategóriákat és csatornákat')),
+  admin(new S().setName('telepites').setDescription('Létrehozza a rangokat és csatornákat, és beállítja a jogokat')),
   admin(new S().setName('rangvalaszto').setDescription('Kirakja a rangválasztó gombokat ebbe a csatornába')),
   admin(new S().setName('ticketpanel').setDescription('Kirakja a ticketnyitó gombot ebbe a csatornába')),
   admin(new S().setName('changelog').setDescription('Frissítés posztolása a bejelentések csatornába')

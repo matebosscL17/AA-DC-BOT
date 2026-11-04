@@ -196,7 +196,7 @@ const muveletek = {
   async telepites(i) {
     await i.deferReply(privat);
     const e = await telepites(i.guild);
-    return i.editReply(`✅ Kész! Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}.`);
+    return i.editReply(`✅ Kész! Új rangok: ${e.rangok}, kategóriák: ${e.kategoriak}, csatornák: ${e.csatornak}. Frissített jogok: ${e.jogok}.`);
   },
 
   async rangvalaszto(i) {

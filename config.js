@@ -26,12 +26,13 @@ const rangok = {
   ertesitesek: ['🔔 Kódok', '🔔 Frissítések', '🔔 Csere', '🔔 Raid', '🔔 Nyereményjáték'],
 };
 
-// iras: 'mindenki' | 'stab' (csak a stáb írhat) | 'rejtett' (csak a stáb látja)
+// iras: nincs megadva = mindenki írhat | 'stab' = csak a stáb írhat | 'rejtett' = csak a stáb látja
+// A kategória iras értékét öröklik a csatornái, de csatornánként felülírható.
 const kategoriak = [
-  { nev: '━━━ 「 ⛩️ KAPU 」 ━━━', csatornak: [
-    { nev: '╭・📜・szabályzat', iras: 'stab' },
-    { nev: '┃・📢・bejelentések', iras: 'stab' },
-    { nev: '╰・📰・hírek-és-kódok', iras: 'stab' },
+  { nev: '━━━ 「 ⛩️ KAPU 」 ━━━', iras: 'stab', csatornak: [
+    { nev: '╭・📜・szabályzat' },
+    { nev: '┃・📢・bejelentések' },
+    { nev: '╰・📰・hírek-és-kódok' },
   ]},
   { nev: '━━━ 「 🌸 TEAHÁZ 」 ━━━', csatornak: [
     { nev: '╭・💬・általános' },
@@ -54,9 +55,9 @@ const kategoriak = [
     { nev: '🎮・Csata 1', hang: true },
     { nev: '🎮・Csata 2', hang: true },
   ]},
-  { nev: '━━━ 「 🔒 STÁB 」 ━━━', csatornak: [
-    { nev: '╭・🗡️・stáb-chat', iras: 'rejtett' },
-    { nev: '╰・📋・logok', iras: 'rejtett' },
+  { nev: '━━━ 「 🔒 STÁB 」 ━━━', iras: 'rejtett', csatornak: [
+    { nev: '╭・🗡️・stáb-chat' },
+    { nev: '╰・📋・logok' },
   ]},
   { nev: '━━━ 「 🔊 HANG 」 ━━━', csatornak: [
     { nev: '╭・🍵・Teaház', hang: true },
