@@ -167,63 +167,85 @@ const jutalmak = {
 
 // A /telepites ezeket a szövegeket rakja ki és tűzi ki magától.
 const szovegek = [
-  { kulcs: 'szabályzat', cim: '⛩️ Szerverszabályzat', szoveg: `Üdv az **${K.szerverNev}** szerveren! Ez egy nem hivatalos, rajongói közösség, amely nem áll kapcsolatban a játék készítőivel vagy a Robloxszal. A szerveren maradással elfogadod az alábbi szabályokat.
+  { kulcs: 'szabályzat', cim: 'Szerverszabályzat', szoveg: `Jó, hogy itt vagy. Ez egy **nem hivatalos, rajongói közösség**, amely nem áll kapcsolatban a játék készítőivel vagy a Robloxszal. Azzal, hogy itt maradsz, elfogadod az alábbiakat.
 
 ### 🤝 Tisztelet
-> **1.** Bánj mindenkivel tisztelettel, a kezdőkkel is.
-> **2.** Tilos a sértegetés, a zaklatás, a fenyegetés és a célzott piszkálás.
-> **3.** Tilos a gyűlöletbeszéd, bármilyen csoportról legyen szó.
-> **4.** A vitákat ne a chaten rendezd, inkább nyiss ticketet.
+\`01\` Mindenkivel bánj tisztelettel, a kezdőkkel is.
+\`02\` Nincs sértegetés, zaklatás, fenyegetés vagy célzott piszkálás.
+\`03\` Nincs helye gyűlöletbeszédnek, senkivel szemben.
+\`04\` A vitákat ticketben rendezd, ne a chaten.
 
-### 💬 Csevegés
-> **5.** A beszélgetés nyelve magyar.
-> **6.** Mindent a témához illő csatornába írj.
-> **7.** Tilos a spam, a flood és a felesleges pingelés.
-> **8.** Stábtagot és rangot csak indokolt esetben pingelj.
-> **9.** Reklámozni és meghívót küldeni csak a stáb engedélyével lehet.
+### 💬 Chat
+\`05\` A szerver nyelve a magyar.
+\`06\` Mindent a témához illő csatornába írj.
+\`07\` Nincs spam, flood vagy felesleges pingelés.
+\`08\` Stábot és rangot csak indokolt esetben pingelj.
+\`09\` Reklám és meghívó csak a stáb engedélyével mehet.
 
 ### 🔞 Tartalom
-> **10.** Tilos a felnőtt, a véres és a sokkoló tartalom, a profilképeket és neveket is beleértve.
-> **11.** Tilos mások személyes adatait, képeit vagy privát beszélgetéseit megosztani.
-> **12.** Tilos politikai és vallási vitákat szítani.
+\`10\` Nincs felnőtt, véres vagy sokkoló tartalom, a neveket és profilképeket is beleértve.
+\`11\` Mások adatait, képeit és privát üzeneteit ne oszd meg.
+\`12\` Politikai és vallási vitákat ne szíts.
 
-### 🎮 Játék és csalás
-> **13.** Tilos a hackek, exploitok és illegális scriptek használata, ajánlása vagy megosztása.
-> **14.** Tilos a más játékosok átverése, a kamu kódok és a kamu linkek terjesztése.
-> **15.** A kihúzott egységekről készült képek legyenek valódiak.
+### 🎮 Játék
+\`13\` Hack, exploit és illegális script itt nem téma: se használat, se ajánlás, se megosztás.
+\`14\` Nincs átverés, kamu kód vagy kamu link.
+\`15\` A megosztott húzásokról készült képek legyenek valódiak.
 
 ### 🔄 Csere
-> **16.** Csak a játékon belül cserélj, és hirdetni a \`/csere\` paranccsal tudsz.
-> **17.** Tilos a pénzért, Robuxért vagy más játék tárgyaiért történő csere.
-> **18.** Tilos a fiókok adása, vétele és megosztása.
-> **19.** A szerver nem vállal felelősséget az elveszett tárgyakért.
+\`16\` Csak a játékon belül cserélj, hirdetni a \`/csere\` paranccsal tudsz.
+\`17\` Nincs csere pénzért, Robuxért vagy más játék tárgyaiért.
+\`18\` Fiókot adni, venni és megosztani tilos.
+\`19\` Az elveszett tárgyakért a szerver nem felel.
 
-### 🔊 Hangcsatornák
-> **20.** Ne kiabálj, ne zenélj és ne használj hangtorzítót mások zavarására.
-> **21.** Beszélgetésről engedély nélkül ne készíts felvételt.
+### 🎧 Hang
+\`20\` Ne kiabálj, ne zenélj, és ne zavard a többieket hangtorzítóval.
+\`21\` Engedély nélkül ne készíts felvételt.
 
-### ⚖️ Büntetések
-> A stáb a szabályszegés súlyától függően dönt: **figyelmeztetés → némítás → kirúgás → kitiltás**. Súlyos esetben az első lépések kimaradhatnak.
-> A bot automatikusan törli a meghívókat és a gyanús linkeket, a spamelőket pedig 5 percre némítja.
-> Ha igazságtalannak érzel egy döntést, nyiss ticketet, és ne vitatkozz nyilvánosan.
+### ⚖️ Ha valaki megszegi
+A stáb a súlyosság alapján dönt: **figyelmeztetés → némítás → kirúgás → kitiltás**. Súlyos esetben lépéseket is kihagyhat.
+A bot magától törli a meghívókat és a gyanús linkeket, a spamelőket pedig 5 percre némítja.
+Igazságtalannak érzel egy döntést? Nyiss ticketet.
 
-### 🛡️ Biztonság
-> A stáb soha nem kéri a jelszavadat. Ne add meg senkinek a Roblox- vagy Discord-fiókod adatait, és ne kattints ismeretlen linkekre.
+### 🛡️ Maradj biztonságban
+A stáb soha nem kéri a jelszavadat. Fiókadatot senkinek ne adj meg, és ismeretlen linkre ne kattints.
 
-*A Discord és a Roblox szabályai itt is érvényesek. A stáb a szabályzatot bármikor módosíthatja.*` },
-  { kulcs: 'gyik', cim: '❓ Gyakori kérdések', szoveg: `**Hogyan szerzek rangot?** Írj a szerveren, a szintek automatikusan jönnek. A szinted: \`/szint\`
-**Hogyan találok csapatot?** Használd az \`/lfg\` parancsot.
-**Hogyan cserélek?** Hirdetni a \`/csere\`, értékelni az \`/ertekeles\` paranccsal lehet.
-**Mit csináljak naponta?** Írd be: \`/napi\`. Jutalmat és küldetéseket kapsz.
-**Hol vannak a kódok?** A hírek-és-kódok csatornában, vagy a \`/kodok\` paranccsal.
-**A /summon ad valamit a játékban?** Nem, ez csak szerveres szórakozás.
-**Bajom van, kihez fordulhatok?** Nyiss ticketet a ticket csatornában.` },
-  { kulcs: 'cserék', szoveg: `**Biztonságos csere**
-- Hirdetni a \`/csere\` paranccsal tudsz, sikeres csere után pedig \`/ertekeles\` paranccsal értékelj.
-- Csak a játékban cserélj, a szerver nem vállal felelősséget az elveszett tárgyakért.
-- Soha ne add meg senkinek a jelszavadat vagy a Roblox-fiókodat.
-- Ne kattints ismeretlen linkekre, és ne tölts le semmit cserepartnertől.
-- A csalókat a csaló-jelentés csatornában jelentsd, képpel együtt.` },
+-# A Discord és a Roblox szabályai itt is érvényesek. A szabályzat bármikor változhat.` },
+  { kulcs: 'gyik', cim: 'Gyakori kérdések', szoveg: `**Hogyan lépek szintet?**
+Csak beszélgess. Az állásodat a \`/szint\` mutatja.
+
+**Hogyan találok csapatot?**
+Használd az \`/lfg\` parancsot, megtelés után saját hangszobát kaptok.
+
+**Hogyan cserélek?**
+Hirdess a \`/csere\` paranccsal, utána értékelj az \`/ertekeles\` paranccsal.
+
+**Mit csináljak naponta?**
+Írd be: \`/napi\`. Jutalom és három küldetés vár.
+
+**Hol találom a kódokat?**
+A hírek-és-kódok csatornában, vagy a \`/kodok\` paranccsal.
+
+**A /summon ad valamit a játékban?**
+Nem, ez csak szerveres szórakozás.
+
+**Elakadtam, kinek szóljak?**
+Nyiss ticketet, a stáb segít.` },
+  { kulcs: 'cserék', cim: 'Biztonságos csere', szoveg: `Hirdess a \`/csere\` paranccsal, sikeres csere után pedig értékelj az \`/ertekeles\` paranccsal.
+
+🔒 **Csak a játékban cserélj.** Az elveszett tárgyakért a szerver nem felel.
+🔑 **A fiókod a tiéd.** Jelszót és fiókot soha ne adj ki.
+🔗 **Figyelj a linkekre.** Ismeretlen linkre ne kattints, és semmit ne tölts le.
+🚨 **Csalót láttál?** Jelentsd képpel a csaló-jelentés csatornában.` },
 ];
 
-module.exports = { K, rangok, kategoriak, beallitasok, summon, kuldetesSablonok, szovegek, lfgModok, jutalmak };
+// Egységes rangnév: "👑 Hokage" helyett "👑 ┃ Hokage"
+const stilus = (nev) => (nev.includes(' ┃ ') ? nev : nev.replace(' ', ' ┃ '));
+for (const lista of [rangok.stab, rangok.kulonleges, rangok.szintek]) {
+  for (const r of lista) r.nev = stilus(r.nev);
+}
+rangok.ertesitesek = rangok.ertesitesek.map(stilus);
+rangok.valaszthato = rangok.valaszthato.map(stilus);
+for (const m of lfgModok) m.ping = stilus(m.ping);
+
+module.exports = { stilus, K, rangok, kategoriak, beallitasok, summon, kuldetesSablonok, szovegek, lfgModok, jutalmak };

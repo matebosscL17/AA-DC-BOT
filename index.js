@@ -5,7 +5,7 @@ const {
 } = require('discord.js');
 const path = require('path');
 const { createHash } = require('crypto');
-const { K, rangok, beallitasok: B, summon, szovegek } = require('./config');
+const { K, rangok, beallitasok: B, summon, szovegek, stilus } = require('./config');
 const { adat, ment, mentMost, napiMentes } = require('./adat');
 const { xpSzinthez, szintXpbol, rangFrissites } = require('./szintek');
 const { telepites, ujraepites, stabNevek } = require('./telepites');
@@ -43,7 +43,7 @@ async function xpAd(tag, mennyiseg, cs) {
   if (ujSzint > szintXpbol(regiXp)) {
     await rangFrissites(tag, ujSzint).catch(console.error);
     await cs?.send({
-      content: `🎉 ${tag} elérte a **${ujSzint}. szintet**!`,
+      content: `⚡ ${tag} szintet lépett: **${ujSzint}. szint**`,
       allowedMentions: { users: [tag.id] },
     }).catch(() => {});
   }
@@ -98,9 +98,12 @@ client.on(Events.GuildMemberAdd, async (tag) => {
   altalanos?.send({
     content: `⛩️ ${tag}`,
     embeds: [new EmbedBuilder().setColor(ROZSA)
-      .setTitle(`Üdv itt, ${tag.user.displayName}!`)
-      .setDescription(`Te vagy a(z) **${tag.guild.memberCount}.** tagunk a(z) **${K.szerverNev}** szerveren.\n\n`
-        + `📜 Olvasd el: ${szabalyzat ?? 'a szabályzatot'}\n📅 Írd be: \`/napi\`\n🎲 Próbáld ki: \`/summon\``)
+      .setTitle(`Üdv, ${tag.user.displayName}! 👋`)
+      .setDescription(`Te vagy a **${tag.guild.memberCount}.** tagunk. Így indulj el:\n\n`
+        + `\`1\` Olvasd el: ${szabalyzat ?? 'a szabályzatot'}\n`
+        + `\`2\` Válassz rangot: ${csatorna(tag.guild, 'rangválasztó') ?? 'a rangválasztóban'}\n`
+        + `\`3\` Vedd fel a jutalmad: \`/napi\`\n`
+        + `\`4\` Keress csapatot: \`/lfg\``)
       .setThumbnail(tag.user.displayAvatarURL({ size: 256 }))
       .setImage('attachment://udvozlo.png')],
     files: [new AttachmentBuilder(path.join(__dirname, 'assets', 'udvozlo.png'), { name: 'udvozlo.png' })],
@@ -193,7 +196,7 @@ async function ticketNyitas(i) {
   adat.ticketek[i.user.id] = cs.id;
   ment();
   await cs.send({
-    content: `${i.user}, írd le a problémádat, a stáb hamarosan válaszol.`,
+    content: `${i.user}, itt vagyunk. Írd le pár mondatban, miben segíthetünk.`,
     components: [new ActionRowBuilder().addComponents(new ButtonBuilder()
       .setCustomId('ticket:zaras').setLabel('Lezárás').setEmoji('🔒').setStyle(ButtonStyle.Danger))],
   });
@@ -212,18 +215,26 @@ async function ticketZaras(i) {
 
 // ---------- Panelek ----------
 function rangPanelTartalom() {
+  const gomb = (nev, stilusa) => {
+    const [emoji, felirat] = nev.split(' ┃ ');
+    return new ButtonBuilder().setCustomId(`rang:${nev}`).setLabel(felirat).setEmoji(emoji).setStyle(stilusa);
+  };
   const sorok = [];
-  const gombok = [...rangok.ertesitesek, ...rangok.valaszthato].map((nev) => {
-    const [emoji, ...resz] = nev.split(' ');
-    return new ButtonBuilder().setCustomId(`rang:${nev}`).setLabel(resz.join(' ')).setEmoji(emoji)
-      .setStyle(ButtonStyle.Secondary);
-  });
-  for (let n = 0; n < gombok.length; n += 5) {
-    sorok.push(new ActionRowBuilder().addComponents(gombok.slice(n, n + 5)));
-  }
+  const hozzaad = (nevek, stilusa) => {
+    for (let n = 0; n < nevek.length; n += 5) {
+      sorok.push(new ActionRowBuilder().addComponents(nevek.slice(n, n + 5).map((x) => gomb(x, stilusa))));
+    }
+  };
+  hozzaad(rangok.ertesitesek, ButtonStyle.Secondary);
+  hozzaad(rangok.valaszthato.slice(0, 3), ButtonStyle.Primary);
+  hozzaad(rangok.valaszthato.slice(3), ButtonStyle.Success);
   return {
-    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Rangválasztó')
-      .setDescription('Nyomd meg, amit fel szeretnél venni: értesítések, platform, játékszint. Újra megnyomva leveszi a rangot.')],
+    content: '',
+    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('Szabd testre a profilod')
+      .setDescription('Egy koppintással felveheted a rangot, még egy koppintással leveheted.\n\n'
+        + '🔔 **Szürke gombok:** erről kérsz értesítést\n'
+        + '🖥️ **Kék gombok:** ezen játszol\n'
+        + '🎯 **Zöld gombok:** ilyen szinten játszol')],
     components: sorok,
   };
 }
@@ -232,8 +243,8 @@ const rangPanel = (cs) => cs.send(rangPanelTartalom());
 
 function ticketPanel(cs) {
   return cs.send({
-    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎫 Segítség')
-      .setDescription('Kérdésed van, vagy bajod akadt? Nyiss ticketet, és a stáb segít.')],
+    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('Segítségre van szükséged?')
+      .setDescription('Kérdésed van, hibát találtál, vagy jelentenél valakit? Nyiss egy privát ticketet, és a stáb hamarosan válaszol.')],
     components: [new ActionRowBuilder().addComponents(new ButtonBuilder()
       .setCustomId('ticket:nyitas').setLabel('Ticket nyitása').setEmoji('🎫').setStyle(ButtonStyle.Primary))],
   });
@@ -400,7 +411,7 @@ const muveletek = {
   },
 
   async hir(i) {
-    const cs = await pingPoszt(i.guild, 'hírek-és-kódok', '🔔 Frissítések', new EmbedBuilder().setColor(ROZSA)
+    const cs = await pingPoszt(i.guild, 'hírek-és-kódok', stilus('🔔 Frissítések'), new EmbedBuilder().setColor(ROZSA)
       .setTitle(`📰 ${i.options.getString('cim')}`)
       .setDescription(i.options.getString('szoveg').replaceAll('\\n', '\n')).setTimestamp());
     return i.reply({ content: cs ? `Kiraktam ide: ${cs}` : 'Nem találom a hírek csatornát.', ...privat });
@@ -430,7 +441,7 @@ const muveletek = {
     adat.kodok.push({ kod, jutalom: i.options.getString('jutalom') ?? '' });
     ment();
     const jutalom = i.options.getString('jutalom');
-    await pingPoszt(i.guild, 'hírek-és-kódok', '🔔 Kódok', new EmbedBuilder().setColor(0x2ed573)
+    await pingPoszt(i.guild, 'hírek-és-kódok', stilus('🔔 Kódok'), new EmbedBuilder().setColor(0x2ed573)
       .setTitle('🎁 Új kód!').setDescription(`\`${kod}\`${jutalom ? `\n${jutalom}` : ''}`));
     return i.reply({ content: `Felvéve és kirakva: \`${kod}\``, ...privat });
   },

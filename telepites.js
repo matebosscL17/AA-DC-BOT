@@ -1,5 +1,5 @@
 const { ChannelType, PermissionFlagsBits: P } = require('discord.js');
-const { rangok, kategoriak } = require('./config');
+const { rangok, kategoriak, stilus } = require('./config');
 const { adat, ment } = require('./adat');
 const { szintXpbol, rangFrissites } = require('./szintek');
 
@@ -49,8 +49,11 @@ async function telepites(guild) {
     ...rangok.valaszthato.map((nev) => ({ nev })),
   ];
   for (const r of mind) {
-    const meglevo = guild.roles.cache.find((x) => x.name === r.nev);
+    // A régi formájú nevet ("👑 Hokage") átnevezzük, így a tagok megtartják a rangot.
+    const meglevo = guild.roles.cache.find((x) => x.name === r.nev)
+      ?? guild.roles.cache.find((x) => x.name === r.nev.replace(' ┃ ', ' '));
     if (meglevo) {
+      if (meglevo.name !== r.nev) await meglevo.setName(r.nev).catch((e) => console.error(r.nev, e.message));
       if (stabNevek.includes(r.nev)) {
         await meglevo.setPermissions(rangJogok(r)).then(() => { eredmeny.jogok++; }, (e) => {
           console.error(`A(z) ${r.nev} rang jogai nem állíthatók (a bot rangja legyen feljebb):`, e.message);
@@ -139,9 +142,9 @@ async function ujraepites(guild) {
   for (const tag of tagok.values()) {
     if (tag.user.bot) continue;
     const nevek = [...tag.roles.cache.values()]
-      .filter((r) => r.id !== guild.roles.everyone.id && !r.managed && !szintNevek.includes(r.name))
+      .filter((r) => r.id !== guild.roles.everyone.id && !r.managed && !szintNevek.includes(stilus(r.name)))
       .map((r) => r.name);
-    mentes.set(tag.id, nevek);
+    mentes.set(tag.id, nevek.map(stilus));
   }
 
   let kihagyott = 0;
