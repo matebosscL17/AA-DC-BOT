@@ -93,7 +93,7 @@ client.on(Events.GuildMemberAdd, async (tag) => {
   }
   const genin = rangNev(tag.guild, rangok.szintek.at(-1).nev);
   if (genin) await tag.roles.add(genin).catch(console.error);
-  const altalanos = csatorna(tag.guild, 'általános');
+  const altalanos = csatorna(tag.guild, 'üdvözlő') ?? csatorna(tag.guild, 'általános');
   const szabalyzat = csatorna(tag.guild, 'szabályzat');
   altalanos?.send({
     content: `⛩️ ${tag}`,
@@ -213,7 +213,7 @@ async function ticketZaras(i) {
 // ---------- Panelek ----------
 function rangPanelTartalom() {
   const sorok = [];
-  const gombok = rangok.ertesitesek.map((nev) => {
+  const gombok = [...rangok.ertesitesek, ...rangok.valaszthato].map((nev) => {
     const [emoji, ...resz] = nev.split(' ');
     return new ButtonBuilder().setCustomId(`rang:${nev}`).setLabel(resz.join(' ')).setEmoji(emoji)
       .setStyle(ButtonStyle.Secondary);
@@ -222,8 +222,8 @@ function rangPanelTartalom() {
     sorok.push(new ActionRowBuilder().addComponents(gombok.slice(n, n + 5)));
   }
   return {
-    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Értesítések')
-      .setDescription('Nyomd meg, amiről értesítést kérsz. Újra megnyomva leveszi a rangot.')],
+    embeds: [new EmbedBuilder().setColor(ROZSA).setTitle('🎭 Rangválasztó')
+      .setDescription('Nyomd meg, amit fel szeretnél venni: értesítések, platform, játékszint. Újra megnyomva leveszi a rangot.')],
     components: sorok,
   };
 }
@@ -238,6 +238,8 @@ function ticketPanel(cs) {
       .setCustomId('ticket:nyitas').setLabel('Ticket nyitása').setEmoji('🎫').setStyle(ButtonStyle.Primary))],
   });
 }
+
+const guild_csatorna = (guild, id) => guild.channels.cache.get(id);
 
 // Kirakja, ami még nincs kint. Ha egy szöveg megváltozott, a régi üzenetet frissíti.
 async function kirakOnce(kulcs, cs, kuld, { kituz = false, verzio, frissit } = {}) {
@@ -254,6 +256,11 @@ async function kirakOnce(kulcs, cs, kuld, { kituz = false, verzio, frissit } = {
       return;
     }
   }
+  // Ha új csatornába költözik, a régi példányt töröljük.
+  if (regi) {
+    const regiCs = guild_csatorna(cs.guild, regi.csatorna);
+    await regiCs?.messages.delete(regi.uzenet).catch(() => {});
+  }
   const u = await kuld(cs);
   adat.kirakott[kulcs] = { csatorna: cs.id, uzenet: u.id, verzio };
   ment();
@@ -261,8 +268,8 @@ async function kirakOnce(kulcs, cs, kuld, { kituz = false, verzio, frissit } = {
 }
 
 async function kirakasok(guild) {
-  await kirakOnce('rang', csatorna(guild, 'bejelentések'), rangPanel, {
-    verzio: rangok.ertesitesek.join(),
+  await kirakOnce('rang', csatorna(guild, 'rangválasztó') ?? csatorna(guild, 'bejelentések'), rangPanel, {
+    verzio: [...rangok.ertesitesek, ...rangok.valaszthato].join(),
     frissit: (u) => u.edit(rangPanelTartalom()),
   });
   await kirakOnce('ticket', csatorna(guild, '・ticket'), ticketPanel);
@@ -404,7 +411,7 @@ const muveletek = {
     const perc = i.options.getInteger('perc');
     const nyertesek = i.options.getInteger('nyertesek') ?? 1;
     const vege = Date.now() + perc * 60_000;
-    const cs = csatorna(i.guild, 'bejelentések') ?? i.channel;
+    const cs = csatorna(i.guild, 'nyereményjáték') ?? csatorna(i.guild, 'bejelentések') ?? i.channel;
     const uzenet = await cs.send({
       embeds: [new EmbedBuilder().setColor(0xffd700).setTitle(`🎉 ${nyeremeny}`)
         .setDescription(`Nyertesek száma: **${nyertesek}**\nVége: <t:${Math.floor(vege / 1000)}:R>`)],
@@ -461,7 +468,7 @@ const muveletek = {
       .setFooter({ text: 'Csak szerveres játék, a játékban nem ad semmit.' })] });
     if (talalat.ritkasag === 'Secret') {
       funk.hetiPont(i.user.id, 'secret');
-      await csatorna(i.guild, 'általános')?.send({
+      await (csatorna(i.guild, 'secret-húzások') ?? csatorna(i.guild, 'általános'))?.send({
         content: `🌟 **SECRET HÚZÁS!** ${i.user} kihúzta: **${egyseg}**!`,
         allowedMentions: { parse: [] },
       }).catch(() => {});

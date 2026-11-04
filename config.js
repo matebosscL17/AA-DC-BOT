@@ -7,47 +7,85 @@ const rangok = {
     { nev: '🔥 Hashira', szin: '#FF3B3B', jogok: ['ManageChannels', 'ManageRoles', 'BanMembers', 'KickMembers', 'ManageMessages', 'ModerateMembers'] },
     { nev: '⚔️ Kapitány', szin: '#E8E8E8', jogok: ['KickMembers', 'ManageMessages', 'ModerateMembers'] },
     { nev: '🍃 Jonin', szin: '#2ED573', jogok: ['ManageMessages'] },
+    { nev: '🔰 Próbamoderátor', szin: '#7BED9F', jogok: ['ModerateMembers'] },
   ],
   kulonleges: [
     { nev: '🚀 Saiyan Herceg', szin: '#F47FFF' },
     { nev: '🎥 Akatsuki', szin: '#C0392B' },
     { nev: '🏆 Pirátkirály', szin: '#FFD700' },
+    { nev: '💎 VIP', szin: '#9B59B6' },
+    { nev: '🎖️ Veterán', szin: '#CD7F32' },
+    { nev: '🤝 Partner', szin: '#1ABC9C' },
+    { nev: '🎨 Művész', szin: '#FD79A8' },
+    { nev: '🏅 Segítőkész', szin: '#55EFC4' },
   ],
   // Szintrangok, a legerősebbtől lefelé
   szintek: [
+    { nev: '🌠 Isten Mód', szin: '#FFFFFF', szint: 100 },
+    { nev: '☀️ Gear Fifth', szin: '#FFF3B0', szint: 75 },
+    { nev: '👊 One Punch', szin: '#FFEAA7', szint: 60 },
     { nev: '🌌 Ultra Instinct', szin: '#DFE6E9', szint: 50 },
+    { nev: '🎭 Hollow', szin: '#B2BEC3', szint: 45 },
     { nev: '⚡ Super Saiyan', szin: '#FFD32A', szint: 40 },
+    { nev: '🌙 Espada', szin: '#6C5CE7', szint: 35 },
     { nev: '👁️ Sharingan', szin: '#D63031', szint: 30 },
+    { nev: '🌀 Sannin', szin: '#E17055', szint: 25 },
     { nev: '🗡️ Démonvadász', szin: '#00B894', szint: 20 },
+    { nev: '🔱 Titán Harcos', szin: '#A29BFE', szint: 15 },
     { nev: '🛡️ Felderítő', szin: '#6C7A89', szint: 10 },
     { nev: '🍥 Chunin', szin: '#FDCB6E', szint: 5 },
     { nev: '🌱 Genin', szin: '#B2BEC3', szint: 0 },
   ],
-  ertesitesek: ['🔔 Kódok', '🔔 Frissítések', '🔔 Csere', '🔔 Raid', '🔔 LFG', '🔔 Nyereményjáték'],
+  ertesitesek: ['🔔 Kódok', '🔔 Frissítések', '🔔 Csere', '🔔 Raid', '🔔 LFG', '🔔 Nyereményjáték', '🔔 Események'],
+  // Szabadon felvehető rangok a rangválasztóban
+  valaszthato: ['💻 PC', '📱 Mobil', '🎮 Konzol', '🌱 Kezdő játékos', '🎯 Haladó játékos', '💎 Pro játékos'],
 };
 
 // iras: nincs megadva = mindenki írhat | 'stab' = csak a stáb írhat | 'rejtett' = csak a stáb látja
 // A kategória iras értékét öröklik a csatornái, de csatornánként felülírható.
 const kategoriak = [
   { nev: '━━━ 「 ⛩️ KAPU 」 ━━━', iras: 'stab', csatornak: [
-    { nev: '╭・📜・szabályzat' },
+    { nev: '╭・👋・üdvözlő' },
+    { nev: '┃・📜・szabályzat' },
     { nev: '┃・📢・bejelentések' },
-    { nev: '╰・📰・hírek-és-kódok' },
+    { nev: '┃・📰・hírek-és-kódok' },
+    { nev: '┃・🎭・rangválasztó' },
+    { nev: '╰・🛠️・changelog' },
   ]},
   { nev: '━━━ 「 🌸 TEAHÁZ 」 ━━━', csatornak: [
     { nev: '╭・💬・általános' },
     { nev: '┃・🖼️・képek' },
+    { nev: '┃・😂・mémek' },
+    { nev: '┃・🍥・anime-chat' },
     { nev: '╰・🤖・bot-parancsok' },
   ]},
   { nev: '━━━ 「 ⚔️ CSATATÉR 」 ━━━', csatornak: [
     { nev: '╭・💡・tippek' },
+    { nev: '┃・📚・útmutatók', iras: 'stab' },
     { nev: '┃・🏆・tier-lista', iras: 'stab' },
     { nev: '┃・🤝・csapatkeresés' },
+    { nev: '┃・🛡️・összeállítások' },
     { nev: '┃・🎲・summon' },
+    { nev: '┃・🌟・secret-húzások' },
     { nev: '╰・🔄・cserék' },
+  ]},
+  { nev: '━━━ 「 🏆 VERSENYEK 」 ━━━', iras: 'stab', csatornak: [
+    { nev: '╭・🥇・heti-verseny' },
+    { nev: '┃・📊・ranglista' },
+    { nev: '┃・📅・események' },
+    { nev: '╰・🎉・nyereményjáték' },
+  ]},
+  { nev: '━━━ 「 🎨 KÖZÖSSÉG 」 ━━━', csatornak: [
+    { nev: '╭・💭・ötletek' },
+    { nev: '┃・🗳️・szavazások', iras: 'stab' },
+    { nev: '┃・🎨・rajzok' },
+    { nev: '┃・🎬・klipek' },
+    { nev: '╰・🎵・zene' },
   ]},
   { nev: '━━━ 「 🏮 SEGÍTSÉG 」 ━━━', csatornak: [
     { nev: '╭・🎫・ticket', iras: 'stab' },
+    { nev: '┃・❓・gyik', iras: 'stab' },
+    { nev: '┃・🐞・hibajelentés' },
     { nev: '╰・🚨・csaló-jelentés' },
   ]},
   { nev: '━━━ 「 🔊 HANG 」 ━━━', csatornak: [
@@ -57,7 +95,10 @@ const kategoriak = [
   ]},
   { nev: '━━━ 「 🔒 STÁB 」 ━━━', iras: 'rejtett', csatornak: [
     { nev: '╭・🗡️・stáb-chat' },
+    { nev: '┃・✅・stáb-feladatok' },
+    { nev: '┃・📨・jelentések' },
     { nev: '╰・📋・logok' },
+    { nev: '🔒・Stáb Hang', hang: true },
   ]},
   { nev: '━━━ 「 🔊 HANG 」 ━━━', csatornak: [
     { nev: '╭・🍵・Teaház', hang: true },
@@ -170,6 +211,13 @@ const szovegek = [
 > A stáb soha nem kéri a jelszavadat. Ne add meg senkinek a Roblox- vagy Discord-fiókod adatait, és ne kattints ismeretlen linkekre.
 
 *A Discord és a Roblox szabályai itt is érvényesek. A stáb a szabályzatot bármikor módosíthatja.*` },
+  { kulcs: 'gyik', cim: '❓ Gyakori kérdések', szoveg: `**Hogyan szerzek rangot?** Írj a szerveren, a szintek automatikusan jönnek. A szinted: \`/szint\`
+**Hogyan találok csapatot?** Használd az \`/lfg\` parancsot.
+**Hogyan cserélek?** Hirdetni a \`/csere\`, értékelni az \`/ertekeles\` paranccsal lehet.
+**Mit csináljak naponta?** Írd be: \`/napi\`. Jutalmat és küldetéseket kapsz.
+**Hol vannak a kódok?** A hírek-és-kódok csatornában, vagy a \`/kodok\` paranccsal.
+**A /summon ad valamit a játékban?** Nem, ez csak szerveres szórakozás.
+**Bajom van, kihez fordulhatok?** Nyiss ticketet a ticket csatornában.` },
   { kulcs: 'cserék', szoveg: `**Biztonságos csere**
 - Hirdetni a \`/csere\` paranccsal tudsz, sikeres csere után pedig \`/ertekeles\` paranccsal értékelj.
 - Csak a játékban cserélj, a szerver nem vállal felelősséget az elveszett tárgyakért.

@@ -79,7 +79,7 @@ module.exports = ({ csatorna, log, xpAd }) => {
 
   // Megtelt csapatnak saját, csak nekik látható hangszobát nyit.
   async function hangszobaNyitas(guild, cs) {
-    const hang = guild.channels.cache.find((c) => c.type === ChannelType.GuildVoice && c.parentId);
+    const hang = guild.channels.cache.find((c) => c.type === ChannelType.GuildVoice && c.parent?.name.includes('HANG'));
     const jogok = [
       { id: guild.roles.everyone.id, deny: [P.ViewChannel, P.Connect] },
       { id: guild.client.user.id, allow: [P.ViewChannel, P.Connect, P.ManageChannels, P.SendMessages] },
@@ -198,7 +198,7 @@ module.exports = ({ csatorna, log, xpAd }) => {
       }
       const uj = await guild.members.fetch(elsoXp[0]).catch(() => null);
       if (nyertesRang) await uj?.roles.add(nyertesRang).catch(console.error);
-      await csatorna(guild, 'bejelentések')?.send({
+      await (csatorna(guild, 'heti-verseny') ?? csatorna(guild, 'bejelentések'))?.send({
         embeds: [new EmbedBuilder().setColor(0xffd700).setTitle('🏆 A hét nyertesei')
           .setDescription(`**Legaktívabb:** <@${elsoXp[0]}> (${elsoXp[1]} XP)\n`
             + `**Legszerencsésebb:** ${elsoSecret ? `<@${elsoSecret[0]}> (${elsoSecret[1]} Secret)` : 'senki'}`)],

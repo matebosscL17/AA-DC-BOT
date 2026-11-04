@@ -46,6 +46,7 @@ async function telepites(guild) {
     ...rangok.kulonleges,
     ...rangok.szintek,
     ...rangok.ertesitesek.map((nev) => ({ nev })),
+    ...rangok.valaszthato.map((nev) => ({ nev })),
   ];
   for (const r of mind) {
     const meglevo = guild.roles.cache.find((x) => x.name === r.nev);
@@ -63,9 +64,15 @@ async function telepites(guild) {
     eredmeny.rangok++;
   }
 
+  // A meglévő szerveren az új rangok alulra kerülnének, ezért sorba rendezzük őket.
+  const sorrend = mind.map((r) => guild.roles.cache.find((x) => x.name === r.nev)).filter(Boolean);
+  await guild.roles.setPositions(sorrend.map((r, n) => ({ role: r.id, position: sorrend.length - n })))
+    .catch((e) => console.error('A rangok nem rendezhetők (a bot rangja legyen legfelül):', e.message));
+
   const stabRangok = stabNevek.map((n) => guild.roles.cache.find((x) => x.name === n)).filter(Boolean);
 
   const hasznaltKategoriak = new Set();
+  const katSorrend = [];
   for (const kat of kategoriak) {
     const katJogok = jogok(guild, kat.iras, stabRangok);
     // Két azonos nevű kategória is lehet, ezért a már használtat kihagyjuk.
@@ -82,6 +89,8 @@ async function telepites(guild) {
       eredmeny.kategoriak++;
     }
     hasznaltKategoriak.add(kategoria.id);
+    katSorrend.push(kategoria.id);
+    const csatSorrend = [];
 
     for (const cs of kat.csatornak) {
       const tipus = cs.hang ? ChannelType.GuildVoice : ChannelType.GuildText;
@@ -89,11 +98,14 @@ async function telepites(guild) {
       // A Discord a szöveges neveket kisbetűsíti, ezért a név végét hasonlítjuk.
       const kulcs = cs.nev.split('・').pop().toLowerCase();
       const meglevo = guild.channels.cache.find(
-        (c) => c.type === tipus && c.parentId === kategoria.id && c.name.toLowerCase().includes(kulcs),
+        (c) => c.type === tipus && c.parentId === kategoria.id && c.name.toLowerCase().split('・').pop() === kulcs,
       );
       if (meglevo) {
         await meglevo.permissionOverwrites.set(csatJogok);
         eredmeny.jogok++;
+        const celNev = cs.hang ? cs.nev : cs.nev.toLowerCase();
+        if (meglevo.name !== celNev) await meglevo.setName(cs.nev).catch((e) => console.error(cs.nev, e.message));
+        csatSorrend.push(meglevo.id);
         continue;
       }
       const uj = await guild.channels.create({
@@ -105,8 +117,13 @@ async function telepites(guild) {
       });
       if (cs.afk) await guild.setAFKChannel(uj);
       eredmeny.csatornak++;
+      csatSorrend.push(uj.id);
     }
+    await guild.channels.setPositions(csatSorrend.map((channel, position) => ({ channel, position })))
+      .catch((e) => console.error('A csatornák nem rendezhetők:', e.message));
   }
+  await guild.channels.setPositions(katSorrend.map((channel, position) => ({ channel, position })))
+    .catch((e) => console.error('A kategóriák nem rendezhetők:', e.message));
   return eredmeny;
 }
 
